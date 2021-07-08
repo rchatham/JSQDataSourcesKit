@@ -1,10 +1,10 @@
 //
 //  Created by Jesse Squires
-//  http://www.jessesquires.com
+//  https://www.jessesquires.com
 //
 //
 //  Documentation
-//  http://jessesquires.com/JSQDataSourcesKit
+//  https://jessesquires.github.io/JSQDataSourcesKit
 //
 //
 //  GitHub
@@ -12,18 +12,18 @@
 //
 //
 //  License
-//  Copyright © 2015 Jesse Squires
-//  Released under an MIT license: http://opensource.org/licenses/MIT
+//  Copyright © 2015-present Jesse Squires
+//  Released under an MIT license: https://opensource.org/licenses/MIT
 //
 
-import Foundation
 import CoreData
-
+import Foundation
 
 // A quick and dirty core data stack for testing
 // DO NOT DO THIS IN REAL LIFE
 // In fact, use https://github.com/jessesquires/JSQCoreDataKit
 
+// swiftlint:disable force_try
 
 public class CoreDataStack {
 
@@ -31,27 +31,27 @@ public class CoreDataStack {
     public let persistentStoreCoordinator: NSPersistentStoreCoordinator
 
     public init(inMemory: Bool = false) {
-        let modelURL = NSBundle(forClass: CoreDataStack.self).URLForResource("Model", withExtension: "momd")!
+        let modelURL = Bundle(for: CoreDataStack.self).url(forResource: "Model", withExtension: "momd")!
 
-        let model = NSManagedObjectModel(contentsOfURL: modelURL)!
-        let documentsDirectoryURL = try! NSFileManager.defaultManager().URLForDirectory(.DocumentDirectory, inDomain: .UserDomainMask, appropriateForURL: nil, create: true)
-        let storeURL = documentsDirectoryURL.URLByAppendingPathComponent("Model.sqlite")
+        let model = NSManagedObjectModel(contentsOf: modelURL)!
+        let documentsDirectoryURL = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+        let storeURL = documentsDirectoryURL.appendingPathComponent("Model.sqlite")
 
         persistentStoreCoordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
-        try! persistentStoreCoordinator.addPersistentStoreWithType(inMemory ? NSInMemoryStoreType : NSSQLiteStoreType, configuration: nil, URL: inMemory ? nil : storeURL, options: nil)
+        try! persistentStoreCoordinator.addPersistentStore(ofType: inMemory ? NSInMemoryStoreType : NSSQLiteStoreType, configurationName: nil, at: inMemory ? nil : storeURL, options: nil)
 
-        context = NSManagedObjectContext(concurrencyType: .MainQueueConcurrencyType)
+        context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
         context.persistentStoreCoordinator = persistentStoreCoordinator
     }
 
+    @discardableResult
     public func saveAndWait() -> Bool {
         var success = true
 
-        if !context.hasChanges {
-            return success
-        }
-
-        context.performBlockAndWait {
+        context.performAndWait {
+            if !self.context.hasChanges {
+                success = true
+            }
             do {
                 try self.context.save()
             } catch {
@@ -59,8 +59,8 @@ public class CoreDataStack {
                 success = false
             }
         }
-        
         return success
     }
-    
 }
+
+// swiftlint:enable force_try

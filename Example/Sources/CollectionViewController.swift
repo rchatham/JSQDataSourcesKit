@@ -1,10 +1,10 @@
 //
 //  Created by Jesse Squires
-//  http://www.jessesquires.com
+//  https://www.jessesquires.com
 //
 //
 //  Documentation
-//  http://jessesquires.com/JSQDataSourcesKit
+//  https://jessesquires.github.io/JSQDataSourcesKit
 //
 //
 //  GitHub
@@ -12,25 +12,24 @@
 //
 //
 //  License
-//  Copyright © 2015 Jesse Squires
-//  Released under an MIT license: http://opensource.org/licenses/MIT
+//  Copyright © 2015-present Jesse Squires
+//  Released under an MIT license: https://opensource.org/licenses/MIT
 //
 
-import UIKit
-
 import JSQDataSourcesKit
-
+import UIKit
 
 final class CollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout {
 
-    typealias Source = DataSource< Section<CellViewModel> >
-    typealias CollectionCellFactory = ViewFactory<CellViewModel, CollectionViewCell>
-    typealias HeaderViewFactory = TitledSupplementaryViewFactory<CellViewModel>
+    typealias Source = DataSource<CellViewModel>
+    typealias CollectionCellConfig = ReusableViewConfig<CellViewModel, CollectionViewCell>
+    typealias HeaderViewConfig = TitledSupplementaryViewConfig<CellViewModel>
 
-    var dataSourceProvider: DataSourceProvider<Source, CollectionCellFactory, HeaderViewFactory>?
+    var dataSourceProvider: DataSourceProvider<Source, CollectionCellConfig, HeaderViewConfig>?
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.collectionView.accessibilityIdentifier = Identifiers.staticCollectionView.rawValue
         configureCollectionView(collectionView!)
 
         // 1. create view models
@@ -39,31 +38,33 @@ final class CollectionViewController: UICollectionViewController, UICollectionVi
         let section2 = Section(items: CellViewModel())
         let dataSource = DataSource(sections: section0, section1, section2)
 
-        // 2. create cell factory
-        let cellFactory = ViewFactory(reuseIdentifier: CellId) { (cell, model: CellViewModel?, type, collectionView, indexPath) -> CollectionViewCell in
+        // 2. create cell config
+        let cellConfig = ReusableViewConfig(reuseIdentifier: CellId) { (cell, model: CellViewModel?, _, _, indexPath) -> CollectionViewCell in
             cell.label.text = model!.text + "\n\(indexPath.section), \(indexPath.item)"
             cell.accessibilityIdentifier = "\(indexPath.section), \(indexPath.item)"
             return cell
         }
 
-        // 3. create supplementary view factory
-        let headerFactory = TitledSupplementaryViewFactory { (header, item: CellViewModel?, kind, collectionView, indexPath) -> TitledSupplementaryView in
+        // 3. create supplementary view config
+        let headerConfig = TitledSupplementaryViewConfig { (header, _: CellViewModel?, _, _, indexPath) -> TitledSupplementaryView in
             header.label.text = "Section \(indexPath.section)"
-            header.backgroundColor = .darkGrayColor()
-            header.label.textColor = .whiteColor()
+            header.backgroundColor = .darkGray
+            header.label.textColor = .white
             return header
         }
 
         // 4. create data source provider
         self.dataSourceProvider = DataSourceProvider(dataSource: dataSource,
-                                                     cellFactory: cellFactory,
-                                                     supplementaryFactory: headerFactory)
+                                                     cellConfig: cellConfig,
+                                                     supplementaryConfig: headerConfig)
 
         // 5. set data source
         collectionView?.dataSource = self.dataSourceProvider?.collectionViewDataSource
     }
 
-    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        return CGSize(width: collectionView.frame.size.width, height: 50)
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        referenceSizeForHeaderInSection section: Int) -> CGSize {
+        CGSize(width: collectionView.frame.size.width, height: 50)
     }
 }

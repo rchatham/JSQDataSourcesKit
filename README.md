@@ -1,5 +1,5 @@
 # JSQDataSourcesKit
-[![Build Status](https://secure.travis-ci.org/jessesquires/JSQDataSourcesKit.svg)](http://travis-ci.org/jessesquires/JSQDataSourcesKit) [![Version Status](https://img.shields.io/cocoapods/v/JSQDataSourcesKit.svg)][podLink] [![license MIT](https://img.shields.io/cocoapods/l/JSQDataSourcesKit.svg)][mitLink] [![codecov](https://codecov.io/gh/jessesquires/JSQDataSourcesKit/branch/develop/graph/badge.svg)](https://codecov.io/gh/jessesquires/JSQDataSourcesKit) [![Platform](https://img.shields.io/cocoapods/p/JSQDataSourcesKit.svg)][docsLink] [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+[![Build Status](https://secure.travis-ci.org/jessesquires/JSQDataSourcesKit.svg)](https://travis-ci.org/jessesquires/JSQDataSourcesKit) [![Version Status](https://img.shields.io/cocoapods/v/JSQDataSourcesKit.svg)][podLink] [![license MIT](https://img.shields.io/cocoapods/l/JSQDataSourcesKit.svg)][mitLink] [![codecov](https://codecov.io/gh/jessesquires/JSQDataSourcesKit/branch/develop/graph/badge.svg)](https://codecov.io/gh/jessesquires/JSQDataSourcesKit) [![Platform](https://img.shields.io/cocoapods/p/JSQDataSourcesKit.svg)][docsLink] [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 
 *Protocol-oriented, type-safe data source objects that keep your view controllers light*
 
@@ -11,12 +11,15 @@ This library reduces the boilerplate code regarding the `UITableView`, `UICollec
 
 ## Requirements
 
-* iOS 8+
-* Swift 2.2+
+* Xcode 11+
+* Swift 5.1+
+* iOS 11.0+
+* tvOS 11.0+
+* [SwiftLint](https://github.com/realm/SwiftLint)
 
 ## Installation
 
-#### [CocoaPods](http://cocoapods.org) (recommended)
+#### [CocoaPods](https://cocoapods.org) (recommended)
 
 ````ruby
 use_frameworks!
@@ -38,73 +41,32 @@ github "jessesquires/JSQDataSourcesKit"
 
 Read the [docs][docsLink]. Generated with [jazzy](https://github.com/realm/jazzy). Hosted by [GitHub Pages](https://pages.github.com).
 
-More information on the [`gh-pages`](https://github.com/jessesquires/JSQDataSourcesKit/tree/gh-pages) branch.
+#### Generate
 
-## Getting Started
-
-````swift
-import JSQDataSourcesKit
+````bash
+$ ./scripts/build_docs.sh
 ````
 
-#### Design
+#### Preview
 
-This library has four primary components:
-
-1. `Section` — represents a section of data
-2. `DataSource` — represents a collection of `Section` types
-3. `ReusableViewFactory` — responsible for dequeuing and configuring cells (for `UITableView` or `UICollectionView`)
-4. `DataSourceProvider` — owns a data source and cell factory, and provides a `UICollectionViewDataSource` or `UITableViewDataSource` object.
-
-#### Example
-
-The following illustrates a simple example of how these components interact for a collection view.
-
-````swift
-// Given a view controller with a collection view
-                                 
-// 1. create Sections and a DataSource with your model objects
-let section0 = Section(items: ...)
-let section1 = Section(items: ...)
-let section2 = Section(items: ...)
-let dataSource = DataSource(sections: section0, section1, section2)
-
-// 2. create cell factory
-let cellFactory = ViewFactory(reuseIdentifier: "CellId") { (cell, model?, type, collectionView, indexPath) -> MyCellClass in
-    // configure the cell with the model
-    return cell
-}
-
-// 3. create supplementary view factory
-let type = ReusableViewType.supplementaryView(kind: UICollectionElementKindSectionHeader)
-let headerFactory = ViewFactory(reuseIdentifier: "HeaderId", type: type) { (view, model?, type, collectionView, indexPath) -> MyHeaderView in
-    // configure header view
-    return view
-}
-
-// 4. create data source provider
-let dataSourceProvider =  DataSourceProvider(dataSource: dataSource,
-                                             cellFactory: cellFactory,
-                                             supplementaryFactory: headerFactory)
-
-// 5. set the collection view's data source
-collectionView.dataSource = dataSourceProvider.collectionViewDataSource
+````bash
+$ open index.html -a Safari
 ````
 
-#### Demo Project
+## Contributing
 
-The [example project](https://github.com/jessesquires/JSQDataSourcesKit/tree/develop/Example) included exercises *all* functionality in this library.
+Interested in making contributions to this project? Please review the guides below.
 
-## Unit tests
+- [Contributing Guidelines](https://github.com/jessesquires/.github/blob/master/CONTRIBUTING.md)
+- [Code of Conduct](https://github.com/jessesquires/.github/blob/master/CODE_OF_CONDUCT.md)
+- [Support and Help](https://github.com/jessesquires/.github/blob/master/SUPPORT.md)
+- [Security Policy](https://github.com/jessesquires/.github/blob/master/SECURITY.md)
 
-There's a suite of unit tests for `JSQDataSourcesKit`. Run them in the usual way from Xcode. These tests are well commented and serve as further documentation for how to use this library.
-
-## Contribute
-
-Please follow these sweet [contribution guidelines](https://github.com/jessesquires/HowToContribute).
+Also, consider [sponsoring this project](https://www.jessesquires.com/sponsor/) or [buying my apps](https://www.hexedbits.com)! :v:
 
 ## Credits
 
-Created and maintained by [**@jesse_squires**](https://twitter.com/jesse_squires).
+Created and maintained by [**@jesse_squires**](https://twitter.com/jesse_squires)
 
 * Inspired by **[andymatuschak](https://github.com/andymatuschak) /** [gist f1e1691fa1a327468f8e](https://gist.github.com/andymatuschak/f1e1691fa1a327468f8e)
 * Inspired by **[ashfurrow](https://github.com/ashfurrow) /** [UICollectionView-NSFetchedResultsController](https://github.com/ashfurrow/UICollectionView-NSFetchedResultsController)
@@ -117,6 +79,6 @@ Created and maintained by [**@jesse_squires**](https://twitter.com/jesse_squires
 
 *Please provide attribution, it is greatly appreciated.*
 
-[docsLink]:http://www.jessesquires.com/JSQDataSourcesKit
+[docsLink]:https://jessesquires.github.io/JSQDataSourcesKit
 [podLink]:https://cocoapods.org/pods/JSQDataSourcesKit
-[mitLink]:http://opensource.org/licenses/MIT
+[mitLink]:https://opensource.org/licenses/MIT

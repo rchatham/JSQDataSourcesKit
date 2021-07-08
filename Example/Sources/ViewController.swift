@@ -1,10 +1,10 @@
 //
 //  Created by Jesse Squires
-//  http://www.jessesquires.com
+//  https://www.jessesquires.com
 //
 //
 //  Documentation
-//  http://jessesquires.com/JSQDataSourcesKit
+//  https://jessesquires.github.io/JSQDataSourcesKit
 //
 //
 //  GitHub
@@ -12,23 +12,26 @@
 //
 //
 //  License
-//  Copyright © 2015 Jesse Squires
-//  Released under an MIT license: http://opensource.org/licenses/MIT
+//  Copyright © 2015-present Jesse Squires
+//  Released under an MIT license: https://opensource.org/licenses/MIT
 //
 
-import UIKit
 import ExampleModel
-
+import UIKit
 
 final class ViewController: UITableViewController {
 
     let stack = CoreDataStack()
 
-    @IBAction func didTapDeleteButton(sender: UIBarButtonItem) {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.tableView.accessibilityIdentifier = Identifiers.mainTableView.rawValue
+    }
+    @IBAction func didTapDeleteButton(_ sender: UIBarButtonItem) {
         removeAllThingsInStack(stack)
     }
 
-    @IBAction func didTapAddButton(sender: UIBarButtonItem) {
+    @IBAction func didTapAddButton(_ sender: UIBarButtonItem) {
         addThingsInStack(stack, count: 5)
     }
 }

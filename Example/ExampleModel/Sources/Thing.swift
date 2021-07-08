@@ -1,10 +1,10 @@
 //
 //  Created by Jesse Squires
-//  http://www.jessesquires.com
+//  https://www.jessesquires.com
 //
 //
 //  Documentation
-//  http://jessesquires.com/JSQDataSourcesKit
+//  https://jessesquires.github.io/JSQDataSourcesKit
 //
 //
 //  GitHub
@@ -12,14 +12,13 @@
 //
 //
 //  License
-//  Copyright © 2015 Jesse Squires
-//  Released under an MIT license: http://opensource.org/licenses/MIT
+//  Copyright © 2015-present Jesse Squires
+//  Released under an MIT license: https://opensource.org/licenses/MIT
 //
 
-import Foundation
 import CoreData
+import Foundation
 import UIKit
-
 
 public enum Color: String {
     case Red
@@ -27,14 +26,13 @@ public enum Color: String {
     case Green
 
     var displayColor: UIColor {
-        switch(self) {
-        case .Red: return .redColor()
-        case .Blue: return .blueColor()
-        case .Green: return .greenColor()
+        switch self {
+        case .Red: return .red
+        case .Blue: return .blue
+        case .Green: return .green
         }
     }
 }
-
 
 public class Thing: NSManagedObject {
 
@@ -46,7 +44,7 @@ public class Thing: NSManagedObject {
 
     public var color: Color {
         get {
-            return Color(rawValue: colorName)!
+            Color(rawValue: colorName)!
         }
         set {
             colorName = newValue.rawValue
@@ -54,30 +52,27 @@ public class Thing: NSManagedObject {
     }
 
     public var displayName: String {
-        return "Thing \(name)"
+        "Thing \(name)"
     }
 
     public var displayColor: UIColor {
-        return color.displayColor
+        color.displayColor
     }
 
-    public override var description: String {
-        get {
-            return "<Thing: \(name), \(color)>"
-        }
+    override public var description: String {
+        "<Thing: \(name), \(color)>"
     }
 
     // MARK: Init
 
     public init(context: NSManagedObjectContext) {
-        let entityDescription = NSEntityDescription.entityForName("Thing", inManagedObjectContext: context)!
-        super.init(entity: entityDescription, insertIntoManagedObjectContext: context)
+        let entityDescription = NSEntityDescription.entity(forEntityName: "Thing", in: context)!
+        super.init(entity: entityDescription, insertInto: context)
     }
 
-    public override init(entity: NSEntityDescription, insertIntoManagedObjectContext context: NSManagedObjectContext?) {
-        super.init(entity: entity, insertIntoManagedObjectContext: context)
+    override public init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?) {
+        super.init(entity: entity, insertInto: context)
     }
-
 
     // MARK: Methods
 
@@ -94,18 +89,18 @@ public class Thing: NSManagedObject {
         changeNameRandomly()
     }
 
-
     // MARK: Class
 
-    public class func newThing(context: NSManagedObjectContext) -> Thing {
+    @discardableResult
+    public class func newThing(_ context: NSManagedObjectContext) -> Thing {
         let t = Thing(context: context)
         t.color = randomColor(withoutColor: nil)
         t.name = randomName()
         return t
     }
 
-    public class func fetchRequest() -> NSFetchRequest {
-        let request = NSFetchRequest(entityName: "Thing")
+    public class func newFetchRequest() -> NSFetchRequest<Thing> {
+        let request = NSFetchRequest<Thing>(entityName: "Thing")
         request.sortDescriptors = [
             NSSortDescriptor(key: "colorName", ascending: true),
             NSSortDescriptor(key: "name", ascending: true)
@@ -114,17 +109,15 @@ public class Thing: NSManagedObject {
     }
 }
 
-
 private func randomColor(withoutColor color: Color?) -> Color {
-    var colorSet = Set(arrayLiteral: Color.Red, Color.Blue, Color.Green)
+    var colorSet = Set([Color.Red, Color.Blue, Color.Green])
     if let color = color {
         colorSet.remove(color)
     }
     let colors = Array(colorSet)
-    return colors[Int(arc4random_uniform(UInt32(colors.count)))]
+    return colors[Int.random(in: 0..<colors.count)]
 }
 
-
 private func randomName() -> String {
-    return NSUUID().UUIDString.componentsSeparatedByString("-").first!
+    UUID().uuidString.components(separatedBy: "-").first!
 }

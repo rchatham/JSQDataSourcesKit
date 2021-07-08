@@ -1,10 +1,10 @@
 //
 //  Created by Jesse Squires
-//  http://www.jessesquires.com
+//  https://www.jessesquires.com
 //
 //
 //  Documentation
-//  http://jessesquires.com/JSQDataSourcesKit
+//  https://jessesquires.github.io/JSQDataSourcesKit
 //
 //
 //  GitHub
@@ -12,8 +12,8 @@
 //
 //
 //  License
-//  Copyright © 2015 Jesse Squires
-//  Released under an MIT license: http://opensource.org/licenses/MIT
+//  Copyright © 2015-present Jesse Squires
+//  Released under an MIT license: https://opensource.org/licenses/MIT
 //
 
 import Foundation
@@ -22,12 +22,11 @@ import XCTest
 
 import JSQDataSourcesKit
 
-
 final class TitledSupplementaryViewTests: XCTestCase {
 
     func test_thatView_initializesWithFrame() {
         let identifier = TitledSupplementaryView.identifier
-        XCTAssertEqual(identifier, String(TitledSupplementaryView.self))
+        XCTAssertEqual(identifier, String(describing: TitledSupplementaryView.self))
 
         let view = TitledSupplementaryView(frame: CGRect(x: 0, y: 0, width: 320, height: 100))
         view.layoutIfNeeded()
@@ -39,7 +38,7 @@ final class TitledSupplementaryViewTests: XCTestCase {
 
     func test_thatView_adjustsLabelFrameForInsets() {
         let identifier = TitledSupplementaryView.identifier
-        XCTAssertEqual(identifier, String(TitledSupplementaryView.self))
+        XCTAssertEqual(identifier, String(describing: TitledSupplementaryView.self))
 
         let view = TitledSupplementaryView(frame: CGRect(x: 0, y: 0, width: 320, height: 100))
         view.verticalInset = 10
@@ -64,7 +63,7 @@ final class TitledSupplementaryViewTests: XCTestCase {
     func test_thatView_preparesForReuse_ForAttributedText() {
         let view = TitledSupplementaryView(frame: CGRect(x: 0, y: 0, width: 320, height: 100))
         view.layoutIfNeeded()
-        view.label.attributedText = NSAttributedString(string:"title text")
+        view.label.attributedText = NSAttributedString(string: "title text")
 
         XCTAssertNotNil(view.label.attributedText)
 
@@ -76,9 +75,9 @@ final class TitledSupplementaryViewTests: XCTestCase {
     func test_thatView_setsBackgoundColor() {
         let view = TitledSupplementaryView(frame: CGRect(x: 0, y: 0, width: 320, height: 100))
         view.layoutIfNeeded()
-        view.backgroundColor = .redColor()
+        view.backgroundColor = .red
 
         XCTAssertEqual(view.label.backgroundColor, view.backgroundColor)
-        XCTAssertEqual(view.label.backgroundColor, .redColor())
+        XCTAssertEqual(view.label.backgroundColor, .red)
     }
 }

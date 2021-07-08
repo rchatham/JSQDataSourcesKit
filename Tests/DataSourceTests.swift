@@ -1,10 +1,10 @@
 //
 //  Created by Jesse Squires
-//  http://www.jessesquires.com
+//  https://www.jessesquires.com
 //
 //
 //  Documentation
-//  http://jessesquires.com/JSQDataSourcesKit
+//  https://jessesquires.github.io/JSQDataSourcesKit
 //
 //
 //  GitHub
@@ -12,18 +12,17 @@
 //
 //
 //  License
-//  Copyright © 2015 Jesse Squires
-//  Released under an MIT license: http://opensource.org/licenses/MIT
+//  Copyright © 2015-present Jesse Squires
+//  Released under an MIT license: https://opensource.org/licenses/MIT
 //
 
+import CoreData
+import ExampleModel
 import Foundation
 import UIKit
 import XCTest
-import CoreData
-import ExampleModel
 
 import JSQDataSourcesKit
-
 
 final class DataSourceTests: XCTestCase {
 
@@ -48,7 +47,7 @@ final class DataSourceTests: XCTestCase {
         XCTAssertEqual(dataSource.items(inSection: 2)!, sectionC.items)
         XCTAssertNil(dataSource.items(inSection: 3))
 
-        XCTAssertEqual(dataSource.item(atRow:0, inSection: 0), sectionA[0])
+        XCTAssertEqual(dataSource.item(atRow: 0, inSection: 0), sectionA[0])
         XCTAssertEqual(dataSource.item(atRow: 1, inSection: 0), sectionA[1])
         XCTAssertNil(dataSource.item(atRow: 2, inSection: 0))
 
@@ -73,7 +72,7 @@ final class DataSourceTests: XCTestCase {
         let redThings = generateThings(context, color: .Red)
 
         // GIVEN: a fetched results controller
-        let frc = FetchedResultsController<Thing>(fetchRequest: Thing.fetchRequest(),
+        let frc = FetchedResultsController<Thing>(fetchRequest: Thing.newFetchRequest(),
                                                   managedObjectContext: context,
                                                   sectionNameKeyPath: "colorName",
                                                   cacheName: nil)
@@ -109,7 +108,7 @@ final class DataSourceTests: XCTestCase {
         let context = CoreDataStack(inMemory: true).context
 
         // GIVEN: a fetched results controller
-        let frc = FetchedResultsController<Thing>(fetchRequest: Thing.fetchRequest(),
+        let frc = FetchedResultsController<Thing>(fetchRequest: Thing.newFetchRequest(),
                                                   managedObjectContext: context,
                                                   sectionNameKeyPath: "colorName",
                                                   cacheName: nil)
@@ -143,7 +142,7 @@ final class DataSourceTests: XCTestCase {
         let redThings = generateThings(context, color: .Red)
 
         // GIVEN: a fetched results controller
-        let frc = FetchedResultsController<Thing>(fetchRequest: Thing.fetchRequest(),
+        let frc = FetchedResultsController<Thing>(fetchRequest: Thing.newFetchRequest(),
                                                   managedObjectContext: context,
                                                   sectionNameKeyPath: "colorName",
                                                   cacheName: nil)
@@ -151,9 +150,30 @@ final class DataSourceTests: XCTestCase {
 
         // WHEN: we ask for an object
         // THEN: we receive the exepected data
-        XCTAssertEqual(frc[NSIndexPath(forItem: 1, inSection: 0)], blueThings[1])
-        XCTAssertEqual(frc[NSIndexPath(forItem: 2, inSection: 1)], greenThings[2])
-        XCTAssertEqual(frc[NSIndexPath(forItem: 0, inSection: 2)], redThings[0])
+        XCTAssertEqual(frc[IndexPath(item: 1, section: 0)], blueThings[1])
+        XCTAssertEqual(frc[IndexPath(item: 2, section: 1)], greenThings[2])
+        XCTAssertEqual(frc[IndexPath(item: 0, section: 2)], redThings[0])
+    }
+
+    func test_thatFetchedResultsController_returnsExpectedData_atIndexPath() {
+        // GIVEN: a core data stack and objects in a context
+        let context = CoreDataStack(inMemory: true).context
+        let blueThings = generateThings(context, color: .Blue)
+        let greenThings = generateThings(context, color: .Green)
+        let redThings = generateThings(context, color: .Red)
+
+        // GIVEN: a fetched results controller
+        let frc = FetchedResultsController<Thing>(fetchRequest: Thing.newFetchRequest(),
+                                                  managedObjectContext: context,
+                                                  sectionNameKeyPath: "colorName",
+                                                  cacheName: nil)
+        _ = try? frc.performFetch()
+
+        // WHEN: we ask for an object
+        // THEN: we receive the exepected data
+        XCTAssertEqual(frc.item(atIndexPath: IndexPath(item: 1, section: 0)), blueThings[1])
+        XCTAssertEqual(frc.item(atIndexPath: IndexPath(item: 2, section: 1)), greenThings[2])
+        XCTAssertEqual(frc.item(atIndexPath: IndexPath(item: 0, section: 2)), redThings[0])
     }
 
     func test_thatDataSource_returnsExpectedData_fromIntSubscript() {
@@ -198,10 +218,10 @@ final class DataSourceTests: XCTestCase {
         let dataSource = DataSource(sections: sectionA, sectionB, sectionC)
 
         // WHEN: we ask for an item
-        let ip = NSIndexPath(forItem: 2, inSection: 2)
+        let ip = IndexPath(item: 2, section: 2)
         let item = dataSource[ip]
 
-        // THEN: we receive the exepected data
+        // THEN: we receive the expected data
         XCTAssertEqual(item, model)
     }
 
@@ -212,11 +232,144 @@ final class DataSourceTests: XCTestCase {
         var dataSource = DataSource(sections: sectionA, sectionB)
 
         // WHEN: we set an item at a specific index path
-        let ip = NSIndexPath(forItem: 1, inSection: 0)
+        let ip = IndexPath(item: 1, section: 0)
         let item = FakeViewModel()
         dataSource[ip] = item
 
         // THEN: the item is replaced
         XCTAssertEqual(dataSource[ip], item)
+    }
+
+    func test_thatDataSource_returnsNil_whenDataFromInvalidSection_areRequested() {
+        // GIVEN: a data source
+        let sectionA = Section(items: FakeViewModel(), FakeViewModel(), headerTitle: "Header")
+        let sectionB = Section(items: FakeViewModel(), FakeViewModel(), footerTitle: "Footer")
+        let dataSource = DataSource(sections: sectionA, sectionB)
+
+        // WHEN: we request an item from an invalid section
+        let requestedItem = dataSource.item(atRow: 0, inSection: 2)
+
+        // THEN: the returned item should be nil
+        XCTAssertNil(requestedItem, "The requested section shouldn't exist")
+    }
+
+    func test_thatDataSource_insertsExpectedData_atIndexPath() {
+        // GIVEN: a data source
+        let sectionA = Section(items: FakeViewModel(), FakeViewModel(), headerTitle: "Header")
+        let sectionB = Section(items: FakeViewModel(), FakeViewModel(), footerTitle: "Footer")
+        var dataSource = DataSource(sections: sectionA, sectionB)
+
+        // WHEN: we add an item at a specific index path
+        let newItem = FakeViewModel()
+        let ip = IndexPath(item: 2, section: 1)
+        dataSource.insert(item: newItem, at: ip)
+
+        let sectionItems = dataSource.items(inSection: ip.section)
+        let insertedIndex = sectionItems?.firstIndex(of: newItem)
+
+        // THEN: the item is inserted at the specific index path
+        XCTAssertEqual(insertedIndex, ip.row, "New item should be at the requested index")
+        XCTAssertEqual(newItem, dataSource[ip], "New item should match the item at requested index path in dataSource")
+    }
+
+    func test_thatDataSource_appendsExpectedData_inSection() {
+        // GIVEN: a data source
+        let sectionA = Section(items: FakeViewModel(), FakeViewModel(), headerTitle: "Header")
+        let sectionB = Section(items: FakeViewModel(), FakeViewModel(), footerTitle: "Footer")
+        var dataSource = DataSource(sections: sectionA, sectionB)
+
+        // WHEN: we append an item in a specific section
+        let newItem = FakeViewModel()
+        let section = 1
+        dataSource.append(newItem, inSection: section)
+
+        let sectionItems = dataSource.items(inSection: section)
+        let insertedIndex = sectionItems?.firstIndex(of: newItem)
+
+        // THEN: the item is appended in the specific section
+        XCTAssertEqual(insertedIndex, sectionItems!.count - 1, "New item should be at the requested index")
+        XCTAssertEqual(newItem, sectionItems?.last, "New item should be at the end of the requested section")
+    }
+
+    func test_thatDataSource_doesNotInsertData_atOutOfBounds_Section() {
+        // GIVEN: a data source
+        let sectionA = Section(items: FakeViewModel(), FakeViewModel(), headerTitle: "Header")
+        let sectionB = Section(items: FakeViewModel(), FakeViewModel(), footerTitle: "Footer")
+        var dataSource = DataSource(sections: sectionA, sectionB)
+
+        // WHEN: we add an item at a section that doesn't exist
+        let newItem = FakeViewModel()
+        let ip = IndexPath(item: 1, section: 2)
+        dataSource.insert(item: newItem, at: ip)
+
+        let sectionItems = dataSource.items(inSection: 2)
+
+        // THEN: the section should not exist hence the item should not be added
+        XCTAssertNil(sectionItems, "The requested section doesn't exist")
+    }
+
+    func test_thatDataSource_doesNotInsertData_atOutOfBounds_Row() {
+        // GIVEN: a data source
+        let sectionA = Section(items: FakeViewModel(), FakeViewModel(), headerTitle: "Header")
+        let sectionB = Section(items: FakeViewModel(), FakeViewModel(), footerTitle: "Footer")
+        var dataSource = DataSource(sections: sectionA, sectionB)
+
+        // WHEN: we add an item at an index that doesn't exist
+        let newItem = FakeViewModel()
+        let ip = IndexPath(item: 4, section: 1)
+        dataSource.insert(item: newItem, at: ip)
+
+        // THEN: the item should not be added
+        XCTAssertFalse(dataSource.items(inSection: 1)!.contains(newItem), "The item shouldn't be added")
+    }
+
+    func test_thatDataSource_removesExpectedData_atIndexPath() {
+        // GIVEN: a data source
+        let sectionA = Section(items: FakeViewModel(), FakeViewModel(), headerTitle: "Header")
+        let sectionB = Section(items: FakeViewModel(), FakeViewModel(), footerTitle: "Footer")
+        var dataSource = DataSource(sections: sectionA, sectionB)
+
+        // WHEN: we remove an item at a specific index path
+        let ip = IndexPath(item: 1, section: 0)
+        let itemToRemove = dataSource.remove(at: ip)
+
+        // THEN: the item is removed
+        XCTAssertNotNil(itemToRemove)
+        XCTAssertEqual(dataSource.sections.count, 2)
+        XCTAssertEqual(dataSource.items(inSection: 0)?.count, 1)
+        XCTAssertEqual(dataSource.items(inSection: 1)?.count, 2)
+        XCTAssertEqual(sectionA.count, 2, "Original section should not be changed")
+    }
+
+    func test_thatDataSource_doesNotRemoveData_fromInvalid_SectionOrRow() {
+        // GIVEN: a data source
+        let sectionA = Section(items: FakeViewModel(), FakeViewModel(), headerTitle: "Header")
+        let sectionB = Section(items: FakeViewModel(), FakeViewModel(), footerTitle: "Footer")
+        var dataSource = DataSource(sections: sectionA, sectionB)
+
+        // WHEN: we remove an item from an invalid section or row
+        let invalidIndex = 2
+        let itemToRemoveA = dataSource.remove(atRow: 0, inSection: invalidIndex)
+        let itemToRemoveB = dataSource.remove(atRow: invalidIndex, inSection: 0)
+
+        // THEN: the returned items should be nil
+        XCTAssertNil(itemToRemoveA, "The section \(invalidIndex) doesn't exist")
+        XCTAssertNil(itemToRemoveB, "There should be no item in row \(invalidIndex)")
+    }
+
+    func test_thatDataSource_returnsItem_atIndexPath() {
+        // GIVEN: a data source
+        let model = FakeViewModel()
+        let sectionA = Section(items: FakeViewModel(), FakeViewModel(), headerTitle: "Header")
+        let sectionB = Section(items: FakeViewModel(), FakeViewModel(), footerTitle: "Footer")
+        let sectionC = Section(items: FakeViewModel(), FakeViewModel(), model)
+        let dataSource = DataSource(sections: sectionA, sectionB, sectionC)
+
+        // WHEN: we ask for an item
+        let ip = IndexPath(item: 2, section: 2)
+        let item = dataSource.item(atIndexPath: ip)
+
+        // THEN: we receive the expected data
+        XCTAssertEqual(item, model)
     }
 }

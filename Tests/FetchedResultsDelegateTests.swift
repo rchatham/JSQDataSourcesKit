@@ -1,10 +1,10 @@
 //
 //  Created by Jesse Squires
-//  http://www.jessesquires.com
+//  https://www.jessesquires.com
 //
 //
 //  Documentation
-//  http://jessesquires.com/JSQDataSourcesKit
+//  https://jessesquires.github.io/JSQDataSourcesKit
 //
 //
 //  GitHub
@@ -12,18 +12,16 @@
 //
 //
 //  License
-//  Copyright © 2015 Jesse Squires
-//  Released under an MIT license: http://opensource.org/licenses/MIT
+//  Copyright © 2015-present Jesse Squires
+//  Released under an MIT license: https://opensource.org/licenses/MIT
 //
 
-import Foundation
-import UIKit
-import XCTest
 import CoreData
 import ExampleModel
-
+import Foundation
 import JSQDataSourcesKit
-
+import UIKit
+import XCTest
 
 final class FetchedResultsDelegateTests: TestCase {
 
@@ -37,22 +35,22 @@ final class FetchedResultsDelegateTests: TestCase {
         stack.saveAndWait()
 
         // GIVEN: a fetched results controller
-        let frc = FetchedResultsController<Thing>(fetchRequest: Thing.fetchRequest(),
+        let frc = FetchedResultsController<Thing>(fetchRequest: Thing.newFetchRequest(),
                                                   managedObjectContext: context,
                                                   sectionNameKeyPath: "colorName",
                                                   cacheName: nil)
 
-        // GIVEN: a cell factory
-        let factory = ViewFactory(reuseIdentifier: cellReuseId) { (cell, model: Thing?, type, tableView, indexPath) -> FakeTableCell in
-            return cell
+        // GIVEN: a cell config
+        let config = ReusableViewConfig(reuseIdentifier: cellReuseId) { (cell, _: Thing?, _, _, _) -> FakeTableCell in
+            cell
         }
 
         // GIVEN: a data source provider
-        let dataSourceProvider = DataSourceProvider(dataSource: frc, cellFactory: factory, supplementaryFactory: factory)
+        let dataSourceProvider = DataSourceProvider(dataSource: frc, cellConfig: config, supplementaryConfig: config)
         let tableViewDataSource = dataSourceProvider.tableViewDataSource
         tableView.dataSource = tableViewDataSource
 
-        let delegateProvider = FetchedResultsDelegateProvider(cellFactory: factory, tableView: tableView)
+        let delegateProvider = FetchedResultsDelegateProvider(cellConfig: config, tableView: tableView)
         frc.delegate = delegateProvider.tableDelegate
 
         // WHEN: we fech data
@@ -61,26 +59,26 @@ final class FetchedResultsDelegateTests: TestCase {
         // THEN: the table view reports the expected state
         XCTAssertEqual(tableView.numberOfSections, 3)
 
-        XCTAssertEqual(tableView.numberOfRowsInSection(0), blueThings.count)
-        XCTAssertEqual(tableView.numberOfRowsInSection(1), greenThings.count)
-        XCTAssertEqual(tableView.numberOfRowsInSection(2), redThings.count)
+        XCTAssertEqual(tableView.numberOfRows(inSection: 0), blueThings.count)
+        XCTAssertEqual(tableView.numberOfRows(inSection: 1), greenThings.count)
+        XCTAssertEqual(tableView.numberOfRows(inSection: 2), redThings.count)
 
         // WHEN: we modify data, and re-fetch
         for obj in greenThings {
-            context.deleteObject(obj)
+            context.delete(obj)
         }
         generateThings(context, color: .Red)
         blueThings[0].color = .Red
         redThings[0].changeNameRandomly()
-        
+
         stack.saveAndWait()
         _ = try? frc.performFetch()
 
         // THEN: the table view reports the expected state
         XCTAssertEqual(tableView.numberOfSections, 2)
 
-        XCTAssertEqual(tableView.numberOfRowsInSection(0), 2)
-        XCTAssertEqual(tableView.numberOfRowsInSection(1), 7)
+        XCTAssertEqual(tableView.numberOfRows(inSection: 0), 2)
+        XCTAssertEqual(tableView.numberOfRows(inSection: 1), 7)
     }
 
     func test_fetchedResultsDelegate_integration_withCollectionView() {
@@ -93,45 +91,46 @@ final class FetchedResultsDelegateTests: TestCase {
         stack.saveAndWait()
 
         // GIVEN: a fetched results controller
-        let frc = FetchedResultsController<Thing>(fetchRequest: Thing.fetchRequest(),
+        let frc = FetchedResultsController<Thing>(fetchRequest: Thing.newFetchRequest(),
                                                   managedObjectContext: context,
                                                   sectionNameKeyPath: "colorName",
                                                   cacheName: nil)
 
-        // GIVEN: a cell factory
-        let factory = ViewFactory(reuseIdentifier: cellReuseId) { (cell, model: Thing?, type, tableView, indexPath) -> FakeCollectionCell in
-            return cell
+        // GIVEN: a cell config
+        let config = ReusableViewConfig(reuseIdentifier: cellReuseId) { (cell, _: Thing?, _, _, _) -> FakeCollectionCell in
+            cell
         }
 
-        // GIVEN: a supplementary factory
-        let supplementaryFactory = ViewFactory(reuseIdentifier: supplementaryViewReuseId, type: .supplementaryView(kind: fakeSupplementaryViewKind))
-        { (view, model: Thing?, type, collectionView, indexPath) -> FakeCollectionSupplementaryView in
-            return view
+        // GIVEN: a supplementary config
+        let supplementaryConfig = ReusableViewConfig(
+            reuseIdentifier: supplementaryViewReuseId,
+            type: .supplementaryView(kind: fakeSupplementaryViewKind)) { (view, _: Thing?, _, _, _) -> FakeCollectionSupplementaryView in
+                view
         }
 
         // GIVEN: a data source provider
-        let dataSourceProvider = DataSourceProvider(dataSource: frc, cellFactory: factory, supplementaryFactory: supplementaryFactory)
+        let dataSourceProvider = DataSourceProvider(dataSource: frc, cellConfig: config, supplementaryConfig: supplementaryConfig)
         let collectionViewDataSource = dataSourceProvider.collectionViewDataSource
         collectionView.dataSource = collectionViewDataSource
 
-        let delegateProvider = FetchedResultsDelegateProvider(cellFactory: factory, collectionView: collectionView)
+        let delegateProvider = FetchedResultsDelegateProvider(cellConfig: config, collectionView: collectionView)
         frc.delegate = delegateProvider.collectionDelegate
 
         // WHEN: we fech data
         _ = try? frc.performFetch()
 
         // THEN: the table view reports the expected state
-        XCTAssertEqual(collectionView.numberOfSections(), 3)
+        XCTAssertEqual(collectionView.numberOfSections, 3)
 
-        XCTAssertEqual(collectionView.numberOfItemsInSection(0), blueThings.count)
-        XCTAssertEqual(collectionView.numberOfItemsInSection(1), greenThings.count)
-        XCTAssertEqual(collectionView.numberOfItemsInSection(2), redThings.count)
+        XCTAssertEqual(collectionView.numberOfItems(inSection: 0), blueThings.count)
+        XCTAssertEqual(collectionView.numberOfItems(inSection: 1), greenThings.count)
+        XCTAssertEqual(collectionView.numberOfItems(inSection: 2), redThings.count)
 
         collectionView.layoutSubviews()
 
         // WHEN: we modify data, and re-fetch
         for obj in greenThings {
-            context.deleteObject(obj)
+            context.delete(obj)
         }
         generateThings(context, color: .Red)
         blueThings[0].color = .Red
@@ -141,10 +140,10 @@ final class FetchedResultsDelegateTests: TestCase {
         _ = try? frc.performFetch()
 
         // THEN: the table view reports the expected state
-        XCTAssertEqual(collectionView.numberOfSections(), 2)
+        XCTAssertEqual(collectionView.numberOfSections, 2)
 
-        XCTAssertEqual(collectionView.numberOfItemsInSection(0), 2)
-        XCTAssertEqual(collectionView.numberOfItemsInSection(1), 7)
+        XCTAssertEqual(collectionView.numberOfItems(inSection: 0), 2)
+        XCTAssertEqual(collectionView.numberOfItems(inSection: 1), 7)
     }
 
 }

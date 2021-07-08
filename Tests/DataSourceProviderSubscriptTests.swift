@@ -1,10 +1,10 @@
 //
 //  Created by Jesse Squires
-//  http://www.jessesquires.com
+//  https://www.jessesquires.com
 //
 //
 //  Documentation
-//  http://jessesquires.com/JSQDataSourcesKit
+//  https://jessesquires.github.io/JSQDataSourcesKit
 //
 //
 //  GitHub
@@ -12,16 +12,14 @@
 //
 //
 //  License
-//  Copyright © 2015 Jesse Squires
-//  Released under an MIT license: http://opensource.org/licenses/MIT
+//  Copyright © 2015-present Jesse Squires
+//  Released under an MIT license: https://opensource.org/licenses/MIT
 //
 
 import Foundation
+import JSQDataSourcesKit
 import UIKit
 import XCTest
-
-import JSQDataSourcesKit
-
 
 final class DataSourceProviderSubscriptTests: XCTestCase {
 
@@ -32,13 +30,13 @@ final class DataSourceProviderSubscriptTests: XCTestCase {
         let section2 = Section(items: FakeViewModel(), FakeViewModel(), FakeViewModel(), FakeViewModel())
         let dataSource = DataSource([section0, section1, section2])
 
-        // GIVEN: a cell factory
-        let factory = ViewFactory(reuseIdentifier: "cellId") { (cell, model: FakeViewModel?, type, collectionView, indexPath) -> FakeCollectionCell in
-            return cell
+        // GIVEN: a cell config
+        let config = ReusableViewConfig(reuseIdentifier: "cellId") { (cell, _: FakeViewModel?, _, _, _) -> FakeCollectionCell in
+            cell
         }
 
         // GIVEN: a data source provider
-        let dataSourceProvider = DataSourceProvider(dataSource: dataSource, cellFactory: factory, supplementaryFactory: factory)
+        let dataSourceProvider = DataSourceProvider(dataSource: dataSource, cellConfig: config, supplementaryConfig: config)
 
         // WHEN: we ask for a section at a specific index
         let section = dataSourceProvider.dataSource[1]
@@ -54,13 +52,13 @@ final class DataSourceProviderSubscriptTests: XCTestCase {
         let section2 = Section(items: FakeViewModel(), FakeViewModel(), FakeViewModel(), FakeViewModel())
         let dataSource = DataSource([section0, section1, section2])
 
-        // GIVEN: a cell factory
-        let factory = ViewFactory(reuseIdentifier: "cellId") { (cell, model: FakeViewModel?, type, collectionView, indexPath) -> FakeCollectionCell in
-            return cell
+        // GIVEN: a cell config
+        let config = ReusableViewConfig(reuseIdentifier: "cellId") { (cell, _: FakeViewModel?, _, _, _) -> FakeCollectionCell in
+            cell
         }
 
         // GIVEN: a data source provider
-        let dataSourceProvider = DataSourceProvider(dataSource: dataSource, cellFactory: factory, supplementaryFactory: factory)
+        let dataSourceProvider = DataSourceProvider(dataSource: dataSource, cellConfig: config, supplementaryConfig: config)
         let count = dataSourceProvider.dataSource.sections.count
 
         // WHEN: we set a section at a specific index
@@ -79,17 +77,17 @@ final class DataSourceProviderSubscriptTests: XCTestCase {
         let section1 = Section(items: FakeViewModel(), FakeViewModel())
         let dataSource = DataSource([section0, section1])
 
-        // GIVEN: a cell factory
-        let factory = ViewFactory(reuseIdentifier: "cellId") { (cell, model: FakeViewModel?, type, collectionView, indexPath) -> FakeCollectionCell in
-            return cell
+        // GIVEN: a cell config
+        let config = ReusableViewConfig(reuseIdentifier: "cellId") { (cell, _: FakeViewModel?, _, _, _) -> FakeCollectionCell in
+            cell
         }
 
         // GIVEN: a data source provider
-        let dataSourceProvider = DataSourceProvider(dataSource: dataSource, cellFactory: factory, supplementaryFactory: factory)
+        let dataSourceProvider = DataSourceProvider(dataSource: dataSource, cellConfig: config, supplementaryConfig: config)
 
         // WHEN: we ask for an item at a specific index path
-        let item1 = dataSourceProvider.dataSource[NSIndexPath(forItem: 2, inSection: 0)]
-        let item2 = dataSourceProvider.dataSource[NSIndexPath(forItem: 0, inSection: 1)]
+        let item1 = dataSourceProvider.dataSource[IndexPath(item: 2, section: 0)]
+        let item2 = dataSourceProvider.dataSource[IndexPath(item: 0, section: 1)]
 
         // THEN: we receive the expected item
         XCTAssertEqual(item1, section0[2], "Item returned from subscript should equal expected item")
@@ -102,16 +100,16 @@ final class DataSourceProviderSubscriptTests: XCTestCase {
         let section1 = Section(items: FakeViewModel(), FakeViewModel())
         let dataSource = DataSource([section0, section1])
 
-        // GIVEN: a cell factory
-        let factory = ViewFactory(reuseIdentifier: "cellId") { (cell, model: FakeViewModel?, type, collectionView, indexPath) -> FakeCollectionCell in
-            return cell
+        // GIVEN: a cell config
+        let config = ReusableViewConfig(reuseIdentifier: "cellId") { (cell, _: FakeViewModel?, _, _, _) -> FakeCollectionCell in
+            cell
         }
 
         // GIVEN: a data source provider
-        let dataSourceProvider = DataSourceProvider(dataSource: dataSource, cellFactory: factory, supplementaryFactory: factory)
+        let dataSourceProvider = DataSourceProvider(dataSource: dataSource, cellConfig: config, supplementaryConfig: config)
 
         // WHEN: we set an item at a specific index path
-        let indexPath = NSIndexPath(forItem: 2, inSection: 0)
+        let indexPath = IndexPath(item: 2, section: 0)
         let expectedItem = FakeViewModel()
 
         dataSourceProvider.dataSource[indexPath] = expectedItem

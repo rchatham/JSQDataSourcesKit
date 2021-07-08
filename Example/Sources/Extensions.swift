@@ -1,10 +1,10 @@
 //
 //  Created by Jesse Squires
-//  http://www.jessesquires.com
+//  https://www.jessesquires.com
 //
 //
 //  Documentation
-//  http://jessesquires.com/JSQDataSourcesKit
+//  https://jessesquires.github.io/JSQDataSourcesKit
 //
 //
 //  GitHub
@@ -12,120 +12,125 @@
 //
 //
 //  License
-//  Copyright © 2015 Jesse Squires
-//  Released under an MIT license: http://opensource.org/licenses/MIT
+//  Copyright © 2015-present Jesse Squires
+//  Released under an MIT license: https://opensource.org/licenses/MIT
 //
 
-
 import CoreData
-import Foundation
-import UIKit
 import ExampleModel
-
+import Foundation
+import JSQDataSourcesKit
+import UIKit
 
 extension UIAlertController {
-    class func showActionAlert(presenter: UIViewController,
-                               addNewAction: () -> Void,
-                               deleteAction: () -> Void,
-                               changeNameAction: () -> Void,
-                               changeColorAction: () -> Void,
-                               changeAllAction: () -> Void) {
-        let alert = UIAlertController(title: "You must select items first", message: nil, preferredStyle: .ActionSheet)
+    // swiftlint:disable:next function_parameter_count
+    class func showActionAlert(_ presenter: UIViewController,
+                               addNewAction: @escaping () -> Void,
+                               deleteAction: @escaping () -> Void,
+                               changeNameAction: @escaping () -> Void,
+                               changeColorAction: @escaping () -> Void,
+                               changeAllAction: @escaping () -> Void) {
+        let alert = UIAlertController(title: "You must select items first", message: nil, preferredStyle: .actionSheet)
 
-        alert.addAction(UIAlertAction(title: "Add new", style: .Default) { action in
+        alert.addAction(UIAlertAction(title: "Add new", style: .default) { _ in
             addNewAction()
             })
 
-        alert.addAction(UIAlertAction(title: "Delete selected", style: .Default) { action in
+        alert.addAction(UIAlertAction(title: "Delete selected", style: .default) { _ in
             deleteAction()
             })
 
-        alert.addAction(UIAlertAction(title: "Change name selected", style: .Default) { action in
+        alert.addAction(UIAlertAction(title: "Change name selected", style: .default) { _ in
             changeNameAction()
             })
 
-        alert.addAction(UIAlertAction(title: "Change color selected", style: .Default) { action in
+        alert.addAction(UIAlertAction(title: "Change color selected", style: .default) { _ in
             changeColorAction()
             })
 
-        alert.addAction(UIAlertAction(title: "Change all selected", style: .Default) { action in
+        alert.addAction(UIAlertAction(title: "Change all selected", style: .default) { _ in
             changeAllAction()
             })
 
-        alert.addAction(UIAlertAction(title: "Cancel", style: .Cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
 
-        presenter.presentViewController(alert, animated: true, completion: nil)
+        presenter.present(alert, animated: true, completion: nil)
     }
 }
-
 
 extension UITableView {
 
     func deselectAllRows() {
         if let indexPaths = indexPathsForSelectedRows {
             for i in indexPaths {
-                deselectRowAtIndexPath(i, animated: true)
+                deselectRow(at: i, animated: true)
             }
         }
     }
 }
-
 
 extension UICollectionView {
 
     func deselectAllItems() {
-        if let indexPaths = indexPathsForSelectedItems() {
+        if let indexPaths = indexPathsForSelectedItems {
             for i in indexPaths {
-                deselectItemAtIndexPath(i, animated: true)
+                deselectItem(at: i, animated: true)
             }
         }
     }
 }
 
+extension FetchedResultsController {
 
-extension NSFetchedResultsController {
-
-    func deleteThingsAtIndexPaths(indexPaths: [NSIndexPath]?) {
-        guard let indexPaths = indexPaths else {
+    func deleteThingsAtIndexPaths(_ indexPaths: [IndexPath]) {
+        guard !indexPaths.isEmpty else {
             return
         }
 
-        for i in indexPaths {
-            let thingToDelete = objectAtIndexPath(i) as! Thing
-            managedObjectContext.deleteObject(thingToDelete)
+        managedObjectContext.perform {
+            for i in indexPaths {
+                let thingToDelete = self.object(at: i) as! Thing
+                self.managedObjectContext.delete(thingToDelete)
+            }
         }
     }
 
-    func changeThingNamesAtIndexPaths(indexPaths: [NSIndexPath]?) {
-        guard let indexPaths = indexPaths else {
+    func changeThingNamesAtIndexPaths(_ indexPaths: [IndexPath]) {
+        guard !indexPaths.isEmpty else {
             return
         }
 
-        for i in indexPaths {
-            let thingToChange = objectAtIndexPath(i) as! Thing
-            thingToChange.changeNameRandomly()
+        managedObjectContext.perform {
+            for i in indexPaths {
+                let thingToChange = self.object(at: i) as! Thing
+                thingToChange.changeNameRandomly()
+            }
         }
     }
 
-    func changeThingColorsAtIndexPaths(indexPaths: [NSIndexPath]?) {
-        guard let indexPaths = indexPaths else {
+    func changeThingColorsAtIndexPaths(_ indexPaths: [IndexPath]) {
+        guard !indexPaths.isEmpty else {
             return
         }
 
-        for i in indexPaths {
-            let thingToChange = objectAtIndexPath(i) as! Thing
-            thingToChange.changeColorRandomly()
+        managedObjectContext.perform {
+            for i in indexPaths {
+                let thingToChange = self.object(at: i) as! Thing
+                thingToChange.changeColorRandomly()
+            }
         }
     }
 
-    func changeThingsAtIndexPaths(indexPaths: [NSIndexPath]?) {
-        guard let indexPaths = indexPaths else {
+    func changeThingsAtIndexPaths(_ indexPaths: [IndexPath]) {
+        guard !indexPaths.isEmpty else {
             return
         }
 
-        for i in indexPaths {
-            let thingToChange = objectAtIndexPath(i) as! Thing
-            thingToChange.changeRandomly()
+        managedObjectContext.perform {
+            for i in indexPaths {
+                let thingToChange = self.object(at: i) as! Thing
+                thingToChange.changeRandomly()
+            }
         }
     }
 }

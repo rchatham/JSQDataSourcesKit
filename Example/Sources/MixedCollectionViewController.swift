@@ -1,10 +1,10 @@
 //
 //  Created by Jesse Squires
-//  http://www.jessesquires.com
+//  https://www.jessesquires.com
 //
 //
 //  Documentation
-//  http://jessesquires.com/JSQDataSourcesKit
+//  https://jessesquires.github.io/JSQDataSourcesKit
 //
 //
 //  GitHub
@@ -12,28 +12,28 @@
 //
 //
 //  License
-//  Copyright © 2015 Jesse Squires
-//  Released under an MIT license: http://opensource.org/licenses/MIT
+//  Copyright © 2015-present Jesse Squires
+//  Released under an MIT license: https://opensource.org/licenses/MIT
 //
 
-import UIKit
 import JSQDataSourcesKit
-
+import UIKit
 
 struct FancyViewModel {
     let text: String = "Fancy Text"
-    let cornerRadius: CGFloat = 5
+    let cornerRadius: CGFloat = 8
 }
 
 enum MixedItem {
-    case Standard(CellViewModel)
-    case Fancy(FancyViewModel)
+    case standard(CellViewModel)
+    case fancy(FancyViewModel)
 
     var reuseIdentifier: String {
         switch self {
-        case .Standard(_):
+        case .standard:
             return CellId
-        case .Fancy(_):
+
+        case .fancy:
             return FancyCellId
         }
     }
@@ -41,20 +41,22 @@ enum MixedItem {
 
 final class MixedCollectionViewController: UICollectionViewController, UICollectionViewDelegateFlowLayout {
 
-    typealias Source = DataSource< Section<MixedItem> >
-    typealias CollectionCellFactory = ComposedCellViewFactory
-    typealias HeaderViewFactory = TitledSupplementaryViewFactory<MixedItem>
+    typealias Source = DataSource<MixedItem>
+    typealias CollectionCellConfig = ComposedCellViewConfig
+    typealias HeaderViewConfig = TitledSupplementaryViewConfig<MixedItem>
 
-    var dataSourceProvider: DataSourceProvider<Source, CollectionCellFactory, HeaderViewFactory>?
+    var dataSourceProvider: DataSourceProvider<Source, CollectionCellConfig, HeaderViewConfig>?
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureCollectionView(collectionView!)
-        collectionView!.registerNib(UINib(nibName: "FancyCollectionViewCell", bundle: nil),
-                                   forCellWithReuseIdentifier: FancyCellId)
+        self.collectionView.accessibilityIdentifier = Identifiers.mixedCollectionView.rawValue
 
-        let standardItem = MixedItem.Standard(CellViewModel())
-        let fancyItem = MixedItem.Fancy(FancyViewModel())
+        configureCollectionView(collectionView!)
+        collectionView!.register(UINib(nibName: "FancyCollectionViewCell", bundle: nil),
+                                 forCellWithReuseIdentifier: FancyCellId)
+
+        let standardItem = MixedItem.standard(CellViewModel())
+        let fancyItem = MixedItem.fancy(FancyViewModel())
 
         // 1. create view models
         let section0 = Section(items: standardItem, fancyItem, fancyItem)
@@ -62,40 +64,43 @@ final class MixedCollectionViewController: UICollectionViewController, UICollect
         let section2 = Section(items: fancyItem)
         let dataSource = DataSource(sections: section0, section1, section2)
 
-        // 2. create cell factories
-        let standardCellFactory = ViewFactory(reuseIdentifier: CellId) { (cell, model: CellViewModel?, type, collectionView, indexPath) -> CollectionViewCell in
+        // 2. create cell configs
+        let standardCellConfig = ReusableViewConfig(reuseIdentifier: CellId) { (cell, model: CellViewModel?, _, _, indexPath) -> CollectionViewCell in
             if let model = model {
                 cell.label.text = model.text + "\n\(indexPath.section), \(indexPath.item)"
             }
             return cell
         }
-        let fancyCellFactory = ViewFactory(reuseIdentifier: CellId) { (cell, model: FancyViewModel?, type, collectionView, indexPath) -> FancyCollectionViewCell in
+
+        let fancyCellConfig = ReusableViewConfig(reuseIdentifier: CellId) { (cell, model: FancyViewModel?, _, _, indexPath) -> FancyCollectionViewCell in
             if let model = model {
                 cell.label.text = model.text + "\n\(indexPath.section), \(indexPath.item)"
                 cell.layer.cornerRadius = model.cornerRadius
             }
             return cell
         }
-        let cellFactory = ComposedCellViewFactory(standardCellFactory: standardCellFactory, fancyCellFactory: fancyCellFactory)
+        let cellConfig = ComposedCellViewConfig(standardCellConfig: standardCellConfig, fancyCellConfig: fancyCellConfig)
 
-        // 3. create supplementary view factory
-        let headerFactory = TitledSupplementaryViewFactory { (header, item: MixedItem?, kind, collectionView, indexPath) -> TitledSupplementaryView in
+        // 3. create supplementary view config
+        let headerConfig = TitledSupplementaryViewConfig { (header, _: MixedItem?, _, _, indexPath) -> TitledSupplementaryView in
             header.label.text = "Section \(indexPath.section)"
-            header.backgroundColor = .darkGrayColor()
-            header.label.textColor = .whiteColor()
+            header.backgroundColor = .darkGray
+            header.label.textColor = .white
             return header
         }
 
         // 4. create data source provider
         self.dataSourceProvider = DataSourceProvider(dataSource: dataSource,
-                                                     cellFactory: cellFactory,
-                                                     supplementaryFactory: headerFactory)
+                                                     cellConfig: cellConfig,
+                                                     supplementaryConfig: headerConfig)
 
         // 5. set data source
         collectionView?.dataSource = self.dataSourceProvider?.collectionViewDataSource
     }
 
-    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        return CGSize(width: collectionView.frame.size.width, height: 50)
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        referenceSizeForHeaderInSection section: Int) -> CGSize {
+        CGSize(width: collectionView.frame.size.width, height: 50)
     }
 }

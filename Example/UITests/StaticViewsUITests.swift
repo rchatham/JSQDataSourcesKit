@@ -1,10 +1,10 @@
 //
 //  Created by Jesse Squires
-//  http://www.jessesquires.com
+//  https://www.jessesquires.com
 //
 //
 //  Documentation
-//  http://jessesquires.com/JSQDataSourcesKit
+//  https://jessesquires.github.io/JSQDataSourcesKit
 //
 //
 //  GitHub
@@ -12,60 +12,53 @@
 //
 //
 //  License
-//  Copyright © 2015 Jesse Squires
-//  Released under an MIT license: http://opensource.org/licenses/MIT
+//  Copyright © 2015-present Jesse Squires
+//  Released under an MIT license: https://opensource.org/licenses/MIT
 //
 
 import XCTest
 
 final class StaticViewsUITests: XCTestCase {
-    
+
     private let numberOfCellsInStaticTableView: Int = 9
     private let numberOfCellsInStaticCollectionView: Int = 10
-    
-    private let staticTableViewMenuItem = XCUIApplication().tables.element.cells.elementBoundByIndex(0)
-    private let staticCollectionViewMenuItem = XCUIApplication().tables.element.cells.elementBoundByIndex(1)
-        
+
+    private let staticTableViewMenuItem = XCUIApplication().tables[Identifiers.mainTableView.rawValue].cells.element(boundBy: 0)
+    private let staticCollectionViewMenuItem = XCUIApplication().tables[Identifiers.mainTableView.rawValue].cells.element(boundBy: 1)
+
+    let app = XCUIApplication()
+
     override func setUp() {
         super.setUp()
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
-        continueAfterFailure = false
-        // UI tests must launch the application that they test.
-        // Doing this in setup will make sure it happens for each test method.
-        XCUIApplication().launch()
+        continueAfterFailure = true
+        app.launch()
     }
-    
+
     func test_ThatStaticTableView_LoadsItsCells() {
-        
-        // GIVEN: a table currently presenting on the screen
-        let table = XCUIApplication().tables.element
-        
+        // GIVEN: a static table view
         // WHEN: we choose to present the static table view
         staticTableViewMenuItem.tap()
-        
+
         // THEN: the number of cells loaded matches the number of cells expected
-        let countTableCells = countElements(ofType: .Cell,
-                                            inView: table,
-                                            byUniqueIdentifier: { $0.identifier })
-        
-        XCTAssertEqual(countTableCells, numberOfCellsInStaticTableView,
+        let table = app.tables[Identifiers.staticTableView.rawValue]
+        let countTableCells = countElements(ofType: .cell, inView: table) { $0.identifier }
+
+        XCTAssertEqual(countTableCells,
+                       numberOfCellsInStaticTableView,
                        "The number of cells loaded should be the same as the number of cells expected")
     }
-    
+
     func test_ThatStaticCollectionView_loadsItsCells() {
-        // GIVEN: a collection view currently presenting on the screen
-        let collectionView = XCUIApplication().collectionViews.element
-        
+        // GIVEN: a static collection view
         // WHEN: we choose to present the static collection view
         staticCollectionViewMenuItem.tap()
-        
+
         // THEN: the number of cells loaded matches the number of cells expected
-        let countCollectionViewCells = countElements(ofType: .Cell,
-                                                     inView: collectionView,
-                                                     byUniqueIdentifier: { $0.identifier })
-        
-        XCTAssertEqual(countCollectionViewCells, numberOfCellsInStaticCollectionView,
+        let collection = app.collectionViews[Identifiers.staticCollectionView.rawValue]
+        let countCollectionCells = countElements(ofType: .cell, inView: collection) { $0.identifier }
+
+        XCTAssertEqual(countCollectionCells,
+                       numberOfCellsInStaticCollectionView,
                        "The number of cells loaded should be the same as the number of cells expected")
     }
 }
